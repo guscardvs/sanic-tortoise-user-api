@@ -51,9 +51,7 @@ async def create_user(
 )
 @authorize
 @validate(json=schemas.EditUserValidator)
-async def edit_user(
-    request: Request, id: int, body: schemas.EditUserValidator
-) -> HTTPResponse:
+async def edit_user(request: Request, body: schemas.EditUserValidator) -> HTTPResponse:
     schema = await domain.edit_user(request.ctx.user.id, body)
     return schema.json_response()
 

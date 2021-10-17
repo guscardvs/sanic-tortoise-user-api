@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  database:
+    image: postgres
+    restart: always
+    env_file: ./.env-dev
+  app:
+    build: .
+    env_file: ./.env-dev
+    ports:
+      - 80:8000
+    depends_on:
+      - database
+    command:
+      [
+        "./wait-for-it.sh",
+        "database:5432",
+        "&&",
+        "poetry",
+        "run",
+        "aerich",
+        "upgrade",
+        "&&",
+        "poetry",
+        "run",
+        "sanic",
+        "user_api.main:app",
+        "-H",
+        "0.0.0.0",
+        "-p",
+        "8000",
+        "-w",
+        "4",
+      ]

@@ -103,13 +103,13 @@ def generate_refresh(jti: str, key: str):
 
 
 def mask(string: str):
-    return f"{'#'*(len(string)-4)}{string[-4:]}" if len(string) > 4 else string
+    return f"{'*'*(len(string)-4)}{string[-4:]}" if len(string) > 4 else string
 
 
 def mask_email(email: str):
     name, sep, domain = email.partition("@")
     return (
-        f"{'#'*(len(name)-4)}{name[-4:]}{sep}{domain}"
+        f"{name[0]}{'*'*(len(name)-5)}{name[-4:]}{sep}{domain}"
         if len(name) > 4
-        else email.replace(name, "#" * 4)
+        else email.replace(name, "*" * 4)
     )

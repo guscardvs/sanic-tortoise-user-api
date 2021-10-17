@@ -21,6 +21,11 @@ python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 [tool.poetry.dev-dependencies]
 black = "^21.9b0"
 isort = "^5.9.3"
+sanic-testing = "^0.7.0"
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+coverage = "^6.0.2"
+Faker = "^9.3.1"
 
 [tool.commitizen]
 name = "cz_conventional_commits"

@@ -17,7 +17,7 @@ P = ParamSpec("P")
 def authorize(
     func: typing.Callable[Concatenate[Request, P], T]
 ) -> typing.Callable[Concatenate[Request, P], T]:
-    @openapi.parameter("authorization", str, "header", required=True)
+    @openapi.parameter("Authorization", str, "header", required=True)
     @wraps(func)
     async def inner(request: Request, *args: P.args, **kwargs: P.kwargs):
         token = request.token  # type: typing.Optional[str]
