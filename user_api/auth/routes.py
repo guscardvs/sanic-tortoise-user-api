@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from sanic import Blueprint, HTTPResponse, Request
 from sanic_ext import openapi, validate
 
 from user_api.auth.decorators import authorize
+from user_api.utils.functions import mask_email
 
 from . import domain, schemas
 
@@ -17,8 +20,16 @@ bp = Blueprint("auth", "/auth")
 async def authenticate(
     request: Request, body: schemas.AuthenticateValidator
 ) -> HTTPResponse:
-    result = await domain.authenticate(body)
-    return result.json_response()
+    schema, user = await domain.authenticate(body)
+    await domain.logout(user.id)
+    await domain.create_refresh(user.id, schema.refresh_token)
+    request.app.ctx.logger.info(
+        "[%s] - %s: %s",
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Token claim made by: ",
+        mask_email(user.email),
+    )
+    return schema.json_response()
 
 
 @bp.post("/refresh")
@@ -28,8 +39,16 @@ async def authenticate(
 )
 @validate(json=schemas.RefreshSchema)
 async def refresh(request: Request, body: schemas.RefreshSchema) -> HTTPResponse:
-    result = await domain.refresh(body)
-    return result.json_response()
+    user = await domain.get_user_from_refresh(body)
+    await domain.logout(user.id)
+    schema, user = await domain.refresh(user)
+    request.app.ctx.logger.info(
+        "[%s] - %s: %s",
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Refresh Token claim made by: ",
+        mask_email(user.email),
+    )
+    return schema.json_response()
 
 
 @bp.delete("/logout")

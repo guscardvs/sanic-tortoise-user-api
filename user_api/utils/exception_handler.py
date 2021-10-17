@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TypedDict, Union
 
 from sanic import Blueprint, Request, json
@@ -56,6 +57,13 @@ class ExceptionHandler:
 
     def invalid_or_expired_token(self, request: Request, exception):
         status = 403
+        request.app.ctx.logger.info(
+            "[%s] - %s - %s - %s",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            request.method,
+            request.path,
+            "Received Invalid Token",
+        )
         return json(
             self.generate_response(
                 status, path=request.path, description="invalid or expired token"
@@ -66,6 +74,13 @@ class ExceptionHandler:
 
     def invalid_credentials(self, request: Request, exception):
         status = 401
+        request.app.ctx.logger.info(
+            "[%s] - %s - %s - %s",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            request.method,
+            request.path,
+            "Received Invalid Credentials",
+        )
         return json(
             self.generate_response(
                 status, path=request.path, description="invalid credentials"

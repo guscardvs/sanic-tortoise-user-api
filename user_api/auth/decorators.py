@@ -23,7 +23,6 @@ def authorize(
         token = request.token  # type: typing.Optional[str]
         if not token:
             raise InvalidOrExpiredToken
-        
         user = await domain.validate(token.removeprefix("Bearer "))
         request.ctx.user = user
         if is_coroutine(func):

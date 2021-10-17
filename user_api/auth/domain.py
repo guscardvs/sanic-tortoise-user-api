@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from user_api.auth.models import RefreshModel
 from user_api.settings import config
 from user_api.users.domain import get_user_by_email, get_user_by_id
+from user_api.users.schemas import UserSchema
 from user_api.utils import functions, password
 from user_api.utils.exceptions import (InvalidCredentials,
                                        InvalidOrExpiredToken, ResourceNotFound)
@@ -20,9 +21,11 @@ async def authenticate(body: schemas.AuthenticateValidator):
         raise InvalidCredentials
     payload = generate_token(user.id)
     schema = schemas.TokenSchema.parse_obj(payload)
-    await logout(user.id)
-    await RefreshModel.create(token=schema.refresh_token, user_id=user.id)
-    return schema
+    return schema, user
+
+
+async def create_refresh(user_id: int, refresh_token: str):
+    await RefreshModel.create(token=refresh_token, user_id=user_id)
 
 
 async def logout(user_id: int):
@@ -31,14 +34,17 @@ async def logout(user_id: int):
 
 @fail_with(ResourceNotFound, InvalidOrExpiredToken)
 @fail_with_resource_not_found
-async def refresh(body: schemas.RefreshSchema):
+async def get_user_from_refresh(body: schemas.RefreshSchema):
     refresh_model = await RefreshModel.get(token=body.refresh_token)
     user = await get_user_by_id(refresh_model.user_id)
+    return user
+
+
+async def refresh(user: UserSchema):
     payload = generate_token(user.id)
     schema = schemas.TokenSchema.parse_obj(payload)
-    await logout(user.id)
     await RefreshModel.create(token=schema.refresh_token, user_id=user.id)
-    return schema
+    return schema, user
 
 
 @fail_with(ResourceNotFound, InvalidOrExpiredToken)

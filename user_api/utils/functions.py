@@ -27,7 +27,6 @@ def _async_wrap(
         try:
             return await func(*args, **kwargs)
         except source as err:
-            print(err)
             raise target from err
 
     return inner
@@ -101,3 +100,16 @@ def validate_jti(jti: str, refresh: str, key: str):
 
 def generate_refresh(jti: str, key: str):
     return hmac.new(jti.encode(), key.encode(), hashlib.sha512).hexdigest()
+
+
+def mask(string: str):
+    return f"{'#'*(len(string)-4)}{string[-4:]}" if len(string) > 4 else string
+
+
+def mask_email(email: str):
+    name, sep, domain = email.partition("@")
+    return (
+        f"{'#'*(len(name)-4)}{name[-4:]}{sep}{domain}"
+        if len(name) > 4
+        else email.replace(name, "#" * 4)
+    )
